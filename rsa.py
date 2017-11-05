@@ -4,7 +4,7 @@ class RSA(object):
 	"""docstring for RSA"""
 	def __init__(self):
 		super(RSA, self).__init__()
-		gen_rsa_key()
+		self.gen_rsa_key()
 		
 	def gen_prime_num(self, max_num):
 		isPrime = [True]*(max_num+2)
@@ -17,34 +17,45 @@ class RSA(object):
 				isPrime[i] = False
 
 		return res
-				
+
+	def quick(self, a, b, c):
+		"""(a^b)%c的快速幂取模"""
+		ans = 1
+		while b != 0:
+			if b&1 == 1:
+				ans = (ans * a) % c
+			b >>= 1
+			a = (a * a) % c
+		return ans
+
 	def gen_rsa_key(self):
 		"""返回tuple，其中第一个tuple为公钥"""
-		res = gen_prime_num(10000)
-		self.p = random.choice(res)
-		self.q = random.choice(res)
-		while self.p == self.q:
-			self.p = random.choice(res)
-		self.n = self.p * self.q
+		res = self.gen_prime_num(1000)
+		p = random.choice(res)
+		q = random.choice(res)
+		while p == q:
+			p = random.choice(res)
+		self.n = p * q
 		r = (p - 1) * (q - 1)
-		r_prime = gen_prime_num(r)
+		r_prime = self.gen_prime_num(r)
 		self.e = random.choice(r_prime)
-		self.d = 0
+		d = 0
 		for x in range(2,r):
-			if x * e % r == 1:
-				self.d = x
+			if x * self.e % r == 1:
+				d = x
 				break
+		self.d = d
 
 	def encrypt(self, message):
-		return (message**self.e)%self.n
+		return self.quick(message, self.e, self.n)
 
 	def decrypt(self, encry):
-		return (encry**self.d)%self.n
+		return self.quick(encry, self.d, self.n)
 
 if __name__ == '__main__':
 	m = input('input message:')
-	rsa_sample = RSA(m)
+	rsa_sample = RSA()
 	encrypt_text = [rsa_sample.encrypt(ord(x)) for x in m]
-	print(encrypt_text)
+	print('encrypted text :',encrypt_text)
 	decrypt_text = [chr(rsa_sample.decrypt(x)) for x in encrypt_text]
-	print(decrypt_text)
+	print('decrypted text :',''.join(decrypt_text))
